@@ -9,11 +9,8 @@ const fs = require('fs');
 const config = require('./config');
 require('./db');  // ensure DB is open and PRAGMAs applied
 
-// Auto-apply schema on first boot (idempotent).
-if (!fs.existsSync(config.dbPath) || fs.statSync(config.dbPath).size === 0) {
-  console.log('→ First boot — applying schema');
-  require('./db/init');
-}
+// Apply schema on every startup (idempotent — CREATE TABLE IF NOT EXISTS).
+require('./db/init');
 
 const { optionalAuth } = require('./middleware/auth');
 const { notFound, errorHandler } = require('./middleware/errors');
@@ -32,7 +29,16 @@ if (config.env === 'production') app.set('trust proxy', 1);
 
 // ─── Middleware ────────────────────────────────────────────────────
 app.use(helmet({
-  contentSecurityPolicy: false, // let the SPA manage its own CSP
+  contentSecurityPolicy: {
+    directives: {
+      defaultSrc: ["'self'"],
+      scriptSrc: ["'self'", "'unsafe-inline'"],
+      styleSrc: ["'self'", "'unsafe-inline'", "https://fonts.googleapis.com"],
+      fontSrc: ["'self'", "https://fonts.gstatic.com"],
+      imgSrc: ["'self'", "data:", "blob:"],
+      connectSrc: ["'self'"],
+    },
+  },
   crossOriginEmbedderPolicy: false,
 }));
 

@@ -19,8 +19,9 @@ function errorHandler(err, req, res, _next) {
   if (err.status || err.statusCode) {
     return res.status(err.status || err.statusCode).json({ error: err.message });
   }
-  console.error('[error]', err);
-  res.status(500).json({ error: 'Internal server error' });
+  console.error('[error]', err.stack || err);
+  const isProd = process.env.NODE_ENV === 'production';
+  res.status(500).json({ error: isProd ? 'Internal server error' : (err.message || 'Internal server error') });
 }
 
 module.exports = { notFound, errorHandler };

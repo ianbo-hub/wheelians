@@ -4,7 +4,7 @@
   "private": true,
   "description": "Wheelians Kenya — premium car dealership",
   "scripts": {
-    "install:all": "cd backend && npm install && cd ../frontend-react && npm install --legacy-peer-deps",
+    "install:all": "cd backend && npm install --legacy-peer-deps && cd ../frontend-react && npm install --legacy-peer-deps",
     "build": "cd frontend-react && npm run build",
     "start": "cd backend && node src/app.js",
     "seed": "cd backend && node src/db/seed.js",

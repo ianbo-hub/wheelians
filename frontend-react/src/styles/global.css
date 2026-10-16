@@ -940,6 +940,52 @@ select.form-input{appearance:none;cursor:pointer}
   color:var(--text-dim);
 }
 
+/* ─── PUBLIC MODAL ───────────────────────────────────────────── */
+.admin-modal-overlay{
+  position:fixed;inset:0;
+  background:rgba(0,0,0,.6);
+  backdrop-filter:blur(4px);
+  z-index:300;
+  display:flex;align-items:center;justify-content:center;
+  padding:16px;
+}
+.admin-modal{
+  background:var(--surface);
+  border:1px solid var(--border);
+  border-radius:12px;
+  width:100%;max-width:520px;
+  max-height:90vh;
+  overflow-y:auto;
+  animation:modalIn .2s ease;
+}
+@keyframes modalIn{from{opacity:0;transform:translateY(12px)}to{opacity:1;transform:none}}
+.admin-modal-head{
+  display:flex;justify-content:space-between;align-items:center;
+  padding:20px 24px;
+  border-bottom:1px solid var(--border);
+}
+.admin-modal-head h3{
+  font-family:var(--font-display);
+  font-size:20px;letter-spacing:.04em;
+}
+.admin-modal-body{
+  padding:20px 24px;
+  display:flex;flex-direction:column;gap:12px;
+}
+.admin-modal-foot{
+  padding:16px 24px;
+  border-top:1px solid var(--border);
+  display:flex;justify-content:flex-end;gap:8px;
+}
+.btn-ghost{
+  background:none;border:1px solid var(--border);
+  padding:6px 14px;border-radius:6px;
+  font-size:13px;color:var(--text-dim);
+  transition:border-color .2s,color .2s;
+}
+.btn-ghost:hover{border-color:var(--silver);color:var(--text)}
+.btn-sm{padding:4px 10px;font-size:12px}
+
 /* ─── FEEDBACK MESSAGES ──────────────────────────────────────── */
 .feedback{
   padding:12px 16px;
@@ -978,6 +1024,9 @@ select.form-input{appearance:none;cursor:pointer}
   .form-row{grid-template-columns:1fr}
   .contact-strip{display:none}
   .dot-rail{display:none}
+  .newsletter-form{flex-direction:column}
+  .newsletter-form input{width:100%}
+  .admin-modal{max-width:calc(100vw - 32px)}
 }
 
 @media(max-width:480px){
@@ -986,4 +1035,6 @@ select.form-input{appearance:none;cursor:pointer}
   .car-grid{grid-template-columns:1fr}
   .footer-grid{grid-template-columns:1fr}
   .footer-bottom{flex-direction:column;gap:8px;text-align:center}
+  .arrivals-grid{padding:0}
+  .calc-result .monthly{font-size:36px}
 }

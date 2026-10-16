@@ -15,7 +15,7 @@ if (!adminExists) {
     `INSERT INTO users (email, password_hash, name, role)
      VALUES (?, ?, ?, 'admin')`
   ).run(config.admin.email, hash, config.admin.name);
-  console.log(`✔ Admin created: ${config.admin.email} / ${config.admin.password}`);
+  console.log(`✔ Admin created: ${config.admin.email}`);
 } else {
   console.log(`• Admin already exists: ${config.admin.email}`);
 }
@@ -149,5 +149,6 @@ if (existing === 0) {
 
 console.log('\nSeed complete.');
 console.log('—');
-console.log(`Admin login: ${config.admin.email} / ${config.admin.password}`);
-console.log('Sales rep logins: samuel|grace|david|lucy@wheelians.co.ke / rep1234');
+console.log(`Admin login: ${config.admin.email}`);
+console.log('Sales rep logins: samuel|grace|david|lucy@wheelians.co.ke');
+console.log('(Passwords set via environment variables or defaults — see .env.example)');

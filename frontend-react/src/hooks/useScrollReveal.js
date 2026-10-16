@@ -14,9 +14,22 @@ export function useScrollReveal() {
       { threshold: 0.15 }
     );
 
-    const targets = document.querySelectorAll('.reveal');
-    targets.forEach((el) => obs.observe(el));
+    // Observe all current .reveal elements
+    function observeAll() {
+      document.querySelectorAll('.reveal:not(.visible)').forEach((el) => {
+        obs.observe(el);
+      });
+    }
 
-    return () => obs.disconnect();
+    observeAll();
+
+    // Watch for new .reveal elements added dynamically (e.g. after API fetch)
+    const mo = new MutationObserver(() => observeAll());
+    mo.observe(document.body, { childList: true, subtree: true });
+
+    return () => {
+      obs.disconnect();
+      mo.disconnect();
+    };
   }, []);
 }

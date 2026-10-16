@@ -16,7 +16,7 @@ services:
       - key: JWT_SECRET
         generateValue: true   # Render generates a random 64-char string
       - key: CORS_ORIGIN
-        value: "*"
+        value: "https://wheelians.onrender.com"
       - key: ADMIN_EMAIL
         value: admin@wheelians.co.ke
       - key: ADMIN_PASSWORD

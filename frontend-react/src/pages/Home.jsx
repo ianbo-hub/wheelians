@@ -1,4 +1,3 @@
-import { useEffect } from 'react';
 import ContactStrip from '../components/layout/ContactStrip';
 import Nav from '../components/layout/Nav';
 import Footer from '../components/layout/Footer';
@@ -15,24 +14,6 @@ import { useScrollReveal } from '../hooks/useScrollReveal';
 
 export default function Home() {
   useScrollReveal();
-
-  // Re-run reveal on route mount
-  useEffect(() => {
-    const timer = setTimeout(() => {
-      const obs = new IntersectionObserver(
-        (entries) => entries.forEach((e) => {
-          if (e.isIntersecting) {
-            e.target.classList.add('visible');
-            obs.unobserve(e.target);
-          }
-        }),
-        { threshold: 0.15 }
-      );
-      document.querySelectorAll('.reveal:not(.visible)').forEach((el) => obs.observe(el));
-      return () => obs.disconnect();
-    }, 100);
-    return () => clearTimeout(timer);
-  }, []);
 
   return (
     <>
