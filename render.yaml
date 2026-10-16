@@ -1,0 +1,40 @@
+# Render Blueprint — https://render.com/docs/blueprint-spec
+# Connect your GitHub repo and Render picks this up automatically.
+
+services:
+  - type: web
+    name: wheelians
+    runtime: node
+    plan: free            # change to "starter" ($7/mo) to stay awake 24/7
+    buildCommand: npm run render:build
+    startCommand: npm start
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: PORT
+        value: "10000"    # Render assigns this automatically on free tier
+      - key: JWT_SECRET
+        generateValue: true   # Render generates a random 64-char string
+      - key: CORS_ORIGIN
+        value: "*"
+      - key: ADMIN_EMAIL
+        value: admin@wheelians.co.ke
+      - key: ADMIN_PASSWORD
+        value: change-this-after-deploy
+      # Gmail SMTP — fill these in the Render dashboard after deploy
+      - key: SMTP_HOST
+        value: smtp.gmail.com
+      - key: SMTP_PORT
+        value: "587"
+      - key: SMTP_USER
+        sync: false       # set manually in dashboard
+      - key: SMTP_PASS
+        sync: false       # set manually in dashboard
+      - key: SMTP_FROM
+        value: "Wheelians <ianokwengu@gmail.com>"
+      - key: NOTIFY_EMAIL
+        value: ianokwengu@gmail.com
+    disk:
+      name: wheelians-data
+      mountPath: /opt/render/project/src/backend/data
+      sizeGB: 1

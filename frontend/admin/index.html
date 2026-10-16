@@ -1,0 +1,747 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>AutoElite Admin</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap">
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --bg:#0a0a0a; --surface:#111; --card:#141414;
+  --border:rgba(255,255,255,.08); --silver:#c0c0c0;
+  --text:#e8e8e8; --dim:#888; --accent:#1a6e3a; --danger:#8c2424;
+  --font-sans:'Inter',system-ui,sans-serif;
+  --font-mono:'JetBrains Mono',monospace;
+  --font-display:'Bebas Neue',sans-serif;
+}
+body{background:var(--bg);color:var(--text);font-family:var(--font-sans);min-height:100vh;line-height:1.5}
+a{color:var(--silver);text-decoration:none}
+button{font-family:inherit;cursor:pointer;border:0}
+
+/* ── Layout ── */
+.app{display:grid;grid-template-columns:220px 1fr;min-height:100vh}
+.sidebar{background:#0d0d0d;border-right:1px solid var(--border);padding:24px 0;position:sticky;top:0;height:100vh;overflow-y:auto}
+.brand{padding:0 20px 24px;border-bottom:1px solid var(--border);margin-bottom:16px}
+.brand h1{font-family:var(--font-display);font-size:24px;letter-spacing:.08em}
+.brand h1 span{color:var(--silver)}
+.brand .tag{font-family:var(--font-mono);font-size:10px;color:var(--dim);letter-spacing:.15em;margin-top:4px}
+.nav{list-style:none}
+.nav li a{display:flex;align-items:center;gap:10px;padding:11px 20px;color:var(--dim);font-size:13px;font-weight:500;border-left:2px solid transparent;transition:.15s}
+.nav li a:hover{color:var(--text);background:rgba(255,255,255,.03)}
+.nav li a.active{color:var(--text);border-left-color:var(--silver);background:rgba(192,192,192,.06)}
+.nav .count{margin-left:auto;background:rgba(192,192,192,.15);color:var(--silver);font-family:var(--font-mono);font-size:10px;padding:2px 7px;border-radius:10px}
+
+/* ── Main ── */
+.main{padding:28px 36px;max-width:1400px}
+.topbar{display:flex;justify-content:space-between;align-items:center;margin-bottom:28px}
+.topbar h2{font-family:var(--font-display);font-size:34px;letter-spacing:.05em}
+.user{display:flex;align-items:center;gap:12px;font-size:13px}
+.user .avatar{width:34px;height:34px;border-radius:50%;background:var(--silver);color:#000;display:grid;place-items:center;font-weight:700;font-size:13px}
+
+/* ── Login ── */
+.login-wrap{min-height:100vh;display:grid;place-items:center;padding:20px}
+.login-card{background:var(--card);border:1px solid var(--border);padding:40px;max-width:380px;width:100%}
+.login-card h1{font-family:var(--font-display);font-size:28px;letter-spacing:.08em;margin-bottom:4px}
+.login-card .tag{font-family:var(--font-mono);font-size:10px;color:var(--dim);letter-spacing:.15em;margin-bottom:24px}
+.login-card label{display:block;font-size:11px;color:var(--dim);letter-spacing:.1em;text-transform:uppercase;margin-bottom:6px;margin-top:14px}
+.input{width:100%;background:#0a0a0a;border:1px solid var(--border);color:var(--text);padding:11px 13px;font-family:var(--font-sans);font-size:14px;transition:.15s}
+.input:focus{outline:0;border-color:var(--silver)}
+.btn{background:var(--silver);color:#000;padding:11px 16px;font-size:13px;font-weight:600;letter-spacing:.05em;transition:.15s}
+.btn:hover{background:#fff}
+.btn-full{width:100%;margin-top:20px}
+.btn-ghost{background:transparent;color:var(--text);border:1px solid var(--border);padding:9px 14px;font-size:12px}
+.btn-ghost:hover{border-color:var(--silver)}
+.btn-sm{padding:6px 10px;font-size:11px}
+.btn-danger{background:var(--danger);color:#fff}
+.btn-danger:hover{background:#a53030}
+
+.msg{padding:10px 12px;font-size:12px;border-radius:3px;margin-top:14px;display:none}
+.msg.err{display:block;background:rgba(140,36,36,.2);color:#f0a0a0;border:1px solid rgba(200,80,80,.3)}
+.msg.ok{display:block;background:rgba(26,110,58,.18);color:#8fd4a4;border:1px solid rgba(60,180,100,.3)}
+
+/* ── Stats ── */
+.stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(170px,1fr));gap:16px;margin-bottom:28px}
+.stat{background:var(--card);border:1px solid var(--border);padding:18px 20px}
+.stat .label{font-size:10px;color:var(--dim);letter-spacing:.12em;text-transform:uppercase;margin-bottom:6px}
+.stat .value{font-family:var(--font-display);font-size:30px;letter-spacing:.03em}
+.stat .delta{font-family:var(--font-mono);font-size:11px;color:var(--dim);margin-top:4px}
+
+/* ── Table ── */
+.panel{background:var(--card);border:1px solid var(--border);margin-bottom:24px}
+.panel-head{padding:16px 20px;border-bottom:1px solid var(--border);display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:10px}
+.panel-head h3{font-family:var(--font-display);font-size:20px;letter-spacing:.05em}
+.filters{display:flex;gap:8px;flex-wrap:wrap}
+.filters select,.filters input{background:#0a0a0a;border:1px solid var(--border);color:var(--text);padding:7px 10px;font-size:12px;font-family:inherit}
+.filters select:focus,.filters input:focus{outline:0;border-color:var(--silver)}
+
+table{width:100%;border-collapse:collapse;font-size:13px}
+th,td{padding:12px 16px;text-align:left;border-bottom:1px solid var(--border);vertical-align:top}
+th{font-size:10px;color:var(--dim);letter-spacing:.12em;text-transform:uppercase;font-weight:600;background:rgba(255,255,255,.02)}
+tr:hover td{background:rgba(255,255,255,.015)}
+.pill{display:inline-block;padding:3px 9px;font-size:10px;letter-spacing:.08em;text-transform:uppercase;border-radius:2px;font-weight:600}
+.pill.new,.pill.pending,.pill.submitted{background:rgba(180,140,60,.2);color:#f0c070}
+.pill.contacted,.pill.reviewing{background:rgba(60,120,180,.2);color:#80c0f0}
+.pill.closed,.pill.approved,.pill.accepted,.pill.disbursed,.pill.confirmed,.pill.completed{background:rgba(26,110,58,.25);color:#8fd4a4}
+.pill.spam,.pill.rejected,.pill.cancelled,.pill.withdrawn,.pill.no_show{background:rgba(140,36,36,.25);color:#f0a0a0}
+.pill.in_progress,.pill.offer_made{background:rgba(140,80,180,.25);color:#d0a0ff}
+
+.empty{padding:40px;text-align:center;color:var(--dim);font-size:13px}
+
+/* ── Dialog ── */
+.modal{display:none;position:fixed;inset:0;background:rgba(0,0,0,.85);z-index:100;align-items:center;justify-content:center;padding:20px}
+.modal.open{display:flex}
+.modal-body{background:var(--card);border:1px solid var(--border);max-width:600px;width:100%;max-height:90vh;overflow-y:auto}
+.modal-head{padding:18px 24px;border-bottom:1px solid var(--border);display:flex;justify-content:space-between;align-items:center}
+.modal-head h3{font-family:var(--font-display);font-size:22px}
+.modal-content{padding:24px}
+.modal-content dt{font-size:10px;color:var(--dim);letter-spacing:.12em;text-transform:uppercase;margin-top:16px;margin-bottom:4px}
+.modal-content dt:first-child{margin-top:0}
+.modal-content dd{font-size:14px;color:var(--text)}
+.modal-foot{padding:16px 24px;border-top:1px solid var(--border);display:flex;gap:10px;justify-content:flex-end}
+
+/* ── Hidden ── */
+.hidden{display:none !important}
+
+@media(max-width:900px){
+  .app{grid-template-columns:1fr}
+  .sidebar{position:static;height:auto}
+  .nav{display:flex;flex-wrap:wrap}
+  .nav li{flex:1 1 auto}
+  .nav li a{border-left:0;border-bottom:2px solid transparent}
+  .nav li a.active{border-bottom-color:var(--silver);border-left-color:transparent}
+  .main{padding:20px 16px}
+  table{font-size:11px}
+  th,td{padding:8px 10px}
+}
+</style>
+</head>
+<body>
+
+<!-- ─── Login ─── -->
+<div id="login" class="login-wrap">
+  <form class="login-card" onsubmit="return doLogin(event)">
+    <h1>AUTO<span>ELITE</span></h1>
+    <div class="tag">ADMIN · STAFF LOGIN</div>
+    <label>Email</label>
+    <input class="input" type="email" id="login-email" required value="admin@autoelite.co.ke">
+    <label>Password</label>
+    <input class="input" type="password" id="login-password" required>
+    <button type="submit" class="btn btn-full">Sign In</button>
+    <div class="msg" id="login-msg"></div>
+    <p style="font-size:11px;color:var(--dim);margin-top:20px;text-align:center;line-height:1.6">
+      Default admin: <code style="color:var(--silver)">admin@autoelite.co.ke</code><br>
+      Password set in <code style="color:var(--silver)">backend/.env</code>
+    </p>
+  </form>
+</div>
+
+<!-- ─── App ─── -->
+<div id="app" class="app hidden">
+  <aside class="sidebar">
+    <div class="brand">
+      <h1>AUTO<span>ELITE</span></h1>
+      <div class="tag">ADMIN CONSOLE</div>
+    </div>
+    <ul class="nav">
+      <li><a href="#dashboard" class="active" data-view="dashboard">📊 Dashboard</a></li>
+      <li><a href="#inventory" data-view="inventory">🚗 Inventory <span class="count" id="count-cars">—</span></a></li>
+      <li><a href="#enquiries" data-view="enquiries">💬 Enquiries <span class="count" id="count-enquiries">—</span></a></li>
+      <li><a href="#sell"      data-view="sell">💰 Sell Submissions <span class="count" id="count-sell">—</span></a></li>
+      <li><a href="#finance"   data-view="finance">📊 Finance Apps <span class="count" id="count-finance">—</span></a></li>
+      <li><a href="#testdrives" data-view="testdrives">🚦 Test Drives <span class="count" id="count-td">—</span></a></li>
+      <li><a href="#users"     data-view="users">👥 Users</a></li>
+      <li><a href="#" onclick="doLogout();return false" style="color:var(--dim);margin-top:12px">↩ Sign out</a></li>
+    </ul>
+  </aside>
+
+  <main class="main">
+    <div class="topbar">
+      <h2 id="view-title">DASHBOARD</h2>
+      <div class="user">
+        <span id="me-name">—</span>
+        <div class="avatar" id="me-initial">?</div>
+      </div>
+    </div>
+
+    <!-- Dashboard view -->
+    <section id="view-dashboard" class="view">
+      <div class="stats" id="dashboard-stats"></div>
+      <div class="panel">
+        <div class="panel-head"><h3>Recent Activity</h3></div>
+        <table id="activity-table">
+          <thead><tr><th>Type</th><th>Name</th><th>Email</th><th>When</th></tr></thead>
+          <tbody></tbody>
+        </table>
+      </div>
+    </section>
+
+    <!-- Inventory view -->
+    <section id="view-inventory" class="view hidden">
+      <div class="panel">
+        <div class="panel-head">
+          <h3>Inventory</h3>
+          <div class="filters">
+            <input type="text" id="inv-search" placeholder="Search make/model…">
+            <select id="inv-body"><option value="">All bodies</option></select>
+            <button class="btn btn-sm" onclick="openCarEdit()">+ New car</button>
+          </div>
+        </div>
+        <table id="inventory-table">
+          <thead><tr><th>Make / Model</th><th>Year</th><th>Price</th><th>Body</th><th>Condition</th><th>Rep</th><th>Status</th><th></th></tr></thead>
+          <tbody></tbody>
+        </table>
+      </div>
+    </section>
+
+    <!-- Enquiries view -->
+    <section id="view-enquiries" class="view hidden">
+      <div class="panel">
+        <div class="panel-head">
+          <h3>Enquiries</h3>
+          <div class="filters">
+            <select id="enq-status">
+              <option value="">All status</option>
+              <option value="new">New</option>
+              <option value="contacted">Contacted</option>
+              <option value="in_progress">In progress</option>
+              <option value="closed">Closed</option>
+              <option value="spam">Spam</option>
+            </select>
+          </div>
+        </div>
+        <table id="enquiries-table">
+          <thead><tr><th>When</th><th>Name</th><th>Email</th><th>Source</th><th>Message</th><th>Status</th><th></th></tr></thead>
+          <tbody></tbody>
+        </table>
+      </div>
+    </section>
+
+    <!-- Sell submissions view -->
+    <section id="view-sell" class="view hidden">
+      <div class="panel">
+        <div class="panel-head"><h3>Sell-your-car Submissions</h3></div>
+        <table id="sell-table">
+          <thead><tr><th>When</th><th>Owner</th><th>Vehicle</th><th>km</th><th>Asking</th><th>Status</th><th></th></tr></thead>
+          <tbody></tbody>
+        </table>
+      </div>
+    </section>
+
+    <!-- Finance applications -->
+    <section id="view-finance" class="view hidden">
+      <div class="panel">
+        <div class="panel-head"><h3>Finance Applications</h3></div>
+        <table id="finance-table">
+          <thead><tr><th>When</th><th>Applicant</th><th>Vehicle Price</th><th>Monthly</th><th>Term</th><th>Status</th><th></th></tr></thead>
+          <tbody></tbody>
+        </table>
+      </div>
+    </section>
+
+    <!-- Test drives -->
+    <section id="view-testdrives" class="view hidden">
+      <div class="panel">
+        <div class="panel-head"><h3>Test Drives</h3></div>
+        <table id="td-table">
+          <thead><tr><th>Date</th><th>Name</th><th>Car</th><th>Phone</th><th>Status</th><th></th></tr></thead>
+          <tbody></tbody>
+        </table>
+      </div>
+    </section>
+
+    <!-- Users -->
+    <section id="view-users" class="view hidden">
+      <div class="panel">
+        <div class="panel-head">
+          <h3>Users</h3>
+          <button class="btn btn-sm" onclick="openUserEdit()">+ New staff</button>
+        </div>
+        <table id="users-table">
+          <thead><tr><th>Name</th><th>Email</th><th>Role</th><th>Phone</th><th>Created</th><th></th></tr></thead>
+          <tbody></tbody>
+        </table>
+      </div>
+    </section>
+
+  </main>
+</div>
+
+<!-- ─── Detail modal ─── -->
+<div class="modal" id="detail-modal">
+  <div class="modal-body">
+    <div class="modal-head"><h3 id="detail-title">Detail</h3><button class="btn-ghost btn-sm" onclick="closeModal()">✕</button></div>
+    <div class="modal-content" id="detail-body"></div>
+    <div class="modal-foot" id="detail-foot"></div>
+  </div>
+</div>
+
+<script>
+/* ── Config & state ────────────────────────────────────────────── */
+const API = window.API_BASE || '';
+let TOKEN = localStorage.getItem('ae_token') || '';
+let ME = JSON.parse(localStorage.getItem('ae_me') || 'null');
+
+const h = (sel, root = document) => root.querySelector(sel);
+const hAll = (sel, root = document) => [...root.querySelectorAll(sel)];
+const fmtKES = n => 'KES ' + Number(n).toLocaleString();
+const fmtDate = s => { if (!s) return '—'; const d = new Date(s.replace(' ', 'T') + 'Z'); return d.toLocaleString('en-KE', { year: 'numeric', month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' }); };
+const pill = (status) => `<span class="pill ${status}">${status.replace('_',' ')}</span>`;
+
+async function api(path, opts = {}) {
+  const headers = { ...(opts.headers || {}) };
+  if (TOKEN) headers.Authorization = 'Bearer ' + TOKEN;
+  if (opts.body && !(opts.body instanceof FormData) && !headers['Content-Type']) {
+    headers['Content-Type'] = 'application/json';
+    if (typeof opts.body === 'object') opts.body = JSON.stringify(opts.body);
+  }
+  const res = await fetch(API + path, { ...opts, headers });
+  if (res.status === 401) { doLogout(); throw new Error('Session expired'); }
+  const data = await res.json().catch(() => ({}));
+  if (!res.ok) throw new Error(data.error || 'HTTP ' + res.status);
+  return data;
+}
+
+/* ── Login ─────────────────────────────────────────────────────── */
+async function doLogin(e) {
+  e.preventDefault();
+  const msg = h('#login-msg');
+  msg.className = 'msg';
+  try {
+    const data = await api('/api/auth/login', {
+      method: 'POST',
+      body: { email: h('#login-email').value, password: h('#login-password').value },
+    });
+    if (!['admin', 'sales_rep'].includes(data.user.role)) {
+      throw new Error('Only staff accounts can access the admin console');
+    }
+    TOKEN = data.token;
+    ME = data.user;
+    localStorage.setItem('ae_token', TOKEN);
+    localStorage.setItem('ae_me', JSON.stringify(ME));
+    enterApp();
+  } catch (err) {
+    msg.className = 'msg err';
+    msg.textContent = err.message;
+  }
+  return false;
+}
+
+function doLogout() {
+  TOKEN = ''; ME = null;
+  localStorage.removeItem('ae_token');
+  localStorage.removeItem('ae_me');
+  location.reload();
+}
+
+/* ── View routing ──────────────────────────────────────────────── */
+function enterApp() {
+  h('#login').classList.add('hidden');
+  h('#app').classList.remove('hidden');
+  h('#me-name').textContent = ME.name;
+  h('#me-initial').textContent = ME.name.split(' ').map(w=>w[0]).join('').slice(0,2);
+  const initial = location.hash.replace('#','') || 'dashboard';
+  switchView(initial);
+}
+
+hAll('.nav a[data-view]').forEach(a => a.addEventListener('click', e => {
+  e.preventDefault();
+  switchView(a.dataset.view);
+}));
+
+async function switchView(name) {
+  hAll('.nav a').forEach(a => a.classList.toggle('active', a.dataset.view === name));
+  hAll('.view').forEach(v => v.classList.add('hidden'));
+  h('#view-' + name).classList.remove('hidden');
+  h('#view-title').textContent = name.toUpperCase();
+  location.hash = name;
+  if (name === 'dashboard')   loadDashboard();
+  if (name === 'inventory')   loadInventory();
+  if (name === 'enquiries')   loadEnquiries();
+  if (name === 'sell')        loadSell();
+  if (name === 'finance')     loadFinance();
+  if (name === 'testdrives')  loadTestDrives();
+  if (name === 'users')       loadUsers();
+}
+
+/* ── Dashboard ─────────────────────────────────────────────────── */
+async function loadDashboard() {
+  try {
+    const [stats, activity] = await Promise.all([
+      api('/api/admin/stats'),
+      api('/api/admin/activity'),
+    ]);
+    h('#count-cars').textContent      = stats.cars_available;
+    h('#count-enquiries').textContent = stats.enquiries_new;
+    h('#count-sell').textContent      = stats.sell_pending;
+    h('#count-finance').textContent   = stats.finance_submitted;
+    h('#count-td').textContent        = stats.test_drives_pending;
+
+    const tiles = [
+      ['Inventory',       stats.cars_available, `${stats.cars_sold} sold`],
+      ['New enquiries',   stats.enquiries_new,  `${stats.enquiries_total} total`],
+      ['Pending sell-car',stats.sell_pending,   `${stats.sell_submissions} total`],
+      ['Finance apps',    stats.finance_submitted, `${stats.finance_apps} total`],
+      ['Test drives',     stats.test_drives_pending, 'pending'],
+      ['Users',           stats.users_total,    ''],
+    ];
+    h('#dashboard-stats').innerHTML = tiles.map(([lbl,val,delta]) => `
+      <div class="stat">
+        <div class="label">${lbl}</div>
+        <div class="value">${val}</div>
+        ${delta ? `<div class="delta">${delta}</div>` : ''}
+      </div>`).join('');
+
+    const tb = h('#activity-table tbody');
+    tb.innerHTML = activity.data.length === 0
+      ? '<tr><td colspan="4" class="empty">No activity yet.</td></tr>'
+      : activity.data.map(a => `
+          <tr>
+            <td><span class="pill new">${a.type.replace('_',' ')}</span></td>
+            <td>${a.name || '—'}</td>
+            <td>${a.email || '—'}</td>
+            <td>${fmtDate(a.created_at)}</td>
+          </tr>`).join('');
+  } catch (err) {
+    console.error(err);
+  }
+}
+
+/* ── Inventory ─────────────────────────────────────────────────── */
+let INV = [];
+async function loadInventory() {
+  const q = h('#inv-search').value;
+  const body = h('#inv-body').value;
+  const url = new URL(API + '/api/cars', location.origin);
+  url.searchParams.set('limit', '100');
+  if (q) url.searchParams.set('q', q);
+  if (body) url.searchParams.set('body', body);
+  const data = await api(url.pathname + url.search);
+  INV = data.data;
+
+  const facets = await api('/api/cars/meta/facets');
+  const sel = h('#inv-body');
+  if (sel.options.length <= 1) {
+    facets.bodies.forEach(b => sel.add(new Option(b, b)));
+  }
+
+  const tb = h('#inventory-table tbody');
+  tb.innerHTML = INV.length === 0
+    ? '<tr><td colspan="8" class="empty">No cars yet.</td></tr>'
+    : INV.map(c => `
+      <tr>
+        <td><strong>${c.make}</strong> ${c.model}</td>
+        <td>${c.year}</td>
+        <td>${fmtKES(c.price_kes)}</td>
+        <td>${c.body}</td>
+        <td>${pill(c.condition)}</td>
+        <td>${c.rep?.name || '—'}</td>
+        <td>${c.sold ? pill('rejected') : pill('new')}</td>
+        <td style="text-align:right;white-space:nowrap">
+          <button class="btn-ghost btn-sm" onclick="openCarEdit(${c.id})">Edit</button>
+          ${!c.sold ? `<button class="btn-ghost btn-sm" onclick="markSold(${c.id})">Mark Sold</button>` : ''}
+        </td>
+      </tr>`).join('');
+}
+
+h('#inv-search').addEventListener('input', () => clearTimeout(window._invT) || (window._invT = setTimeout(loadInventory, 300)));
+h('#inv-body').addEventListener('change', loadInventory);
+
+async function markSold(id) {
+  if (!confirm('Mark this car as sold?')) return;
+  await api('/api/cars/' + id + '/mark-sold', { method: 'POST' });
+  loadInventory();
+}
+
+function openCarEdit(id) {
+  const c = INV.find(x => x.id === id) || { year: new Date().getFullYear(), body: 'SUV', condition: 'new', colors: [] };
+  showModal(id ? `Edit — ${c.make} ${c.model}` : 'Add New Car', `
+    <form id="car-form">
+      <dt>Make</dt><dd><input class="input" name="make" value="${c.make || ''}" required></dd>
+      <dt>Model</dt><dd><input class="input" name="model" value="${c.model || ''}" required></dd>
+      <dt>Year / Body</dt><dd style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
+        <input class="input" type="number" name="year" value="${c.year}" min="1950" max="2027" required>
+        <select class="input" name="body" required>
+          ${['SUV','Sedan','Coupe','Pickup','Hatchback','Convertible','Wagon','Van']
+            .map(b => `<option ${b===c.body?'selected':''}>${b}</option>`).join('')}
+        </select>
+      </dd>
+      <dt>Price (KES)</dt><dd><input class="input" type="number" name="price_kes" value="${c.price_kes || ''}" required></dd>
+      <dt>Condition / km</dt><dd style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
+        <select class="input" name="condition">
+          ${['new','used','certified'].map(x => `<option value="${x}" ${x===c.condition?'selected':''}>${x}</option>`).join('')}
+        </select>
+        <input class="input" type="number" name="km" value="${c.km||0}" min="0">
+      </dd>
+      <dt>Power / Engine</dt><dd style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
+        <input class="input" name="power" value="${c.power || ''}" placeholder="415hp">
+        <input class="input" name="engine" value="${c.engine || ''}" placeholder="3.5L V6">
+      </dd>
+      <dt>Badge / Location</dt><dd style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
+        <input class="input" name="badge" value="${c.badge || ''}" placeholder="New / CPO / Low Mileage">
+        <input class="input" name="location" value="${c.location || ''}" placeholder="Nairobi">
+      </dd>
+      <dt>Colors (hex, comma-separated)</dt><dd>
+        <input class="input" name="colors" value="${(Array.isArray(c.colors)?c.colors:[]).join(', ')}" placeholder="#1a1a2e, #c0c0c0">
+      </dd>
+      <dt>Description</dt><dd><textarea class="input" name="description" rows="3">${c.description || ''}</textarea></dd>
+      <dt>Featured on homepage</dt><dd><label><input type="checkbox" name="featured" ${c.featured?'checked':''}> Yes</label></dd>
+    </form>`,
+    [
+      { label: 'Save', cls: 'btn', onClick: () => saveCar(id) },
+      { label: 'Cancel', cls: 'btn-ghost', onClick: closeModal },
+    ]
+  );
+}
+
+async function saveCar(id) {
+  const f = h('#car-form');
+  const fd = new FormData(f);
+  const colors = (fd.get('colors') || '').split(',').map(s => s.trim()).filter(Boolean);
+  const data = {
+    make: fd.get('make'), model: fd.get('model'),
+    year: parseInt(fd.get('year'), 10),
+    price_kes: parseInt(fd.get('price_kes'), 10),
+    body: fd.get('body'), condition: fd.get('condition'),
+    km: parseInt(fd.get('km'), 10),
+    power: fd.get('power') || null, engine: fd.get('engine') || null,
+    badge: fd.get('badge') || null, location: fd.get('location') || null,
+    colors, description: fd.get('description') || null,
+    featured: fd.get('featured') === 'on',
+  };
+  try {
+    if (id) await api('/api/cars/' + id, { method: 'PUT', body: data });
+    else    await api('/api/cars', { method: 'POST', body: data });
+    closeModal(); loadInventory();
+  } catch (err) { alert(err.message); }
+}
+
+/* ── Enquiries ─────────────────────────────────────────────────── */
+let ENQ = [];
+async function loadEnquiries() {
+  const status = h('#enq-status').value;
+  const url = new URL(API + '/api/enquiries', location.origin);
+  if (status) url.searchParams.set('status', status);
+  const data = await api(url.pathname + url.search);
+  ENQ = data.data;
+  const tb = h('#enquiries-table tbody');
+  tb.innerHTML = ENQ.length === 0
+    ? '<tr><td colspan="7" class="empty">No enquiries yet.</td></tr>'
+    : ENQ.map(e => `
+      <tr>
+        <td>${fmtDate(e.created_at)}</td>
+        <td>${e.name}</td>
+        <td>${e.email}</td>
+        <td>${e.source}</td>
+        <td style="max-width:300px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${e.message}</td>
+        <td>${pill(e.status)}</td>
+        <td style="text-align:right"><button class="btn-ghost btn-sm" onclick="openEnqDetail(${e.id})">View</button></td>
+      </tr>`).join('');
+}
+h('#enq-status').addEventListener('change', loadEnquiries);
+
+function openEnqDetail(id) {
+  const e = ENQ.find(x => x.id === id);
+  if (!e) return;
+  showModal(`Enquiry #${e.id}`,`
+    <dt>From</dt><dd>${e.name} &lt;${e.email}&gt;</dd>
+    <dt>Phone</dt><dd>${e.phone || '—'}</dd>
+    <dt>Subject</dt><dd>${e.subject || '—'}</dd>
+    <dt>Source</dt><dd>${e.source}</dd>
+    <dt>Received</dt><dd>${fmtDate(e.created_at)}</dd>
+    <dt>Message</dt><dd style="white-space:pre-wrap">${e.message}</dd>
+    <dt>Status</dt><dd>
+      <select class="input" id="enq-status-set">
+        ${['new','contacted','in_progress','closed','spam'].map(s => `<option ${s===e.status?'selected':''}>${s}</option>`).join('')}
+      </select>
+    </dd>
+    <dt>Internal notes</dt><dd><textarea class="input" id="enq-notes" rows="3">${e.internal_notes || ''}</textarea></dd>`,
+    [
+      { label: 'Save', cls: 'btn', onClick: async () => {
+          await api('/api/enquiries/' + id, {
+            method: 'PATCH',
+            body: { status: h('#enq-status-set').value, internal_notes: h('#enq-notes').value },
+          });
+          closeModal(); loadEnquiries();
+      } },
+      { label: 'Close', cls: 'btn-ghost', onClick: closeModal },
+    ]);
+}
+
+/* ── Sell submissions ─────────────────────────────────────────── */
+let SELLS = [];
+async function loadSell() {
+  const data = await api('/api/sell-car');
+  SELLS = data.data;
+  const tb = h('#sell-table tbody');
+  tb.innerHTML = SELLS.length === 0
+    ? '<tr><td colspan="7" class="empty">No submissions yet.</td></tr>'
+    : SELLS.map(s => `
+      <tr>
+        <td>${fmtDate(s.created_at)}</td>
+        <td>${s.owner_name}<br><small style="color:var(--dim)">${s.owner_email}</small></td>
+        <td>${s.year} ${s.make} ${s.model}</td>
+        <td>${s.km.toLocaleString()}</td>
+        <td>${s.asking_price ? fmtKES(s.asking_price) : '—'}</td>
+        <td>${pill(s.status)}</td>
+        <td style="text-align:right"><button class="btn-ghost btn-sm" onclick="openSellDetail(${s.id})">View</button></td>
+      </tr>`).join('');
+}
+
+async function openSellDetail(id) {
+  const s = await api('/api/sell-car/' + id);
+  showModal(`Submission #${s.id}`, `
+    <dt>Owner</dt><dd>${s.owner_name}<br>${s.owner_email} / ${s.owner_phone}</dd>
+    <dt>Vehicle</dt><dd>${s.year} ${s.make} ${s.model} — ${s.km.toLocaleString()} km</dd>
+    <dt>Condition</dt><dd>${s.condition || '—'}</dd>
+    <dt>Asking</dt><dd>${s.asking_price ? fmtKES(s.asking_price) : '—'}</dd>
+    <dt>Notes</dt><dd style="white-space:pre-wrap">${s.notes || '—'}</dd>
+    <dt>Status</dt><dd>
+      <select class="input" id="sell-status">
+        ${['pending','reviewing','offer_made','accepted','rejected','withdrawn']
+          .map(x => `<option ${x===s.status?'selected':''}>${x}</option>`).join('')}
+      </select>
+    </dd>
+    <dt>Our offer (KES)</dt><dd><input class="input" type="number" id="sell-offer" value="${s.our_offer_kes || ''}"></dd>
+    <dt>Internal notes</dt><dd><textarea class="input" id="sell-notes" rows="3">${s.internal_notes || ''}</textarea></dd>`,
+    [
+      { label: 'Save', cls: 'btn', onClick: async () => {
+          await api('/api/sell-car/' + id, {
+            method: 'PATCH',
+            body: {
+              status: h('#sell-status').value,
+              our_offer_kes: parseInt(h('#sell-offer').value) || null,
+              internal_notes: h('#sell-notes').value,
+            },
+          });
+          closeModal(); loadSell();
+      } },
+      { label: 'Close', cls: 'btn-ghost', onClick: closeModal },
+    ]);
+}
+
+/* ── Finance apps ─────────────────────────────────────────────── */
+async function loadFinance() {
+  const data = await api('/api/finance/applications');
+  const tb = h('#finance-table tbody');
+  tb.innerHTML = data.data.length === 0
+    ? '<tr><td colspan="7" class="empty">No applications yet.</td></tr>'
+    : data.data.map(a => `
+      <tr>
+        <td>${fmtDate(a.created_at)}</td>
+        <td>${a.applicant_name}<br><small style="color:var(--dim)">${a.applicant_email}</small></td>
+        <td>${fmtKES(a.vehicle_price)}</td>
+        <td>${fmtKES(a.monthly_payment)}</td>
+        <td>${a.term_months} mo @ ${a.interest_rate}%</td>
+        <td>${pill(a.status)}</td>
+        <td style="text-align:right">
+          <select class="input" style="padding:4px 8px;font-size:11px" onchange="updateFinance(${a.id}, this.value)">
+            ${['submitted','reviewing','approved','rejected','disbursed'].map(x => `<option ${x===a.status?'selected':''}>${x}</option>`).join('')}
+          </select>
+        </td>
+      </tr>`).join('');
+}
+
+async function updateFinance(id, status) {
+  try {
+    await api('/api/finance/applications/' + id, { method: 'PATCH', body: { status } });
+    loadFinance();
+  } catch (err) { alert(err.message); }
+}
+
+/* ── Test drives ──────────────────────────────────────────────── */
+async function loadTestDrives() {
+  const data = await api('/api/test-drives');
+  const tb = h('#td-table tbody');
+  tb.innerHTML = data.data.length === 0
+    ? '<tr><td colspan="6" class="empty">No test drives yet.</td></tr>'
+    : data.data.map(t => `
+      <tr>
+        <td>${t.preferred_date} ${t.preferred_time || ''}</td>
+        <td>${t.name}<br><small style="color:var(--dim)">${t.email}</small></td>
+        <td>${t.year||''} ${t.make||''} ${t.model||''}</td>
+        <td>${t.phone}</td>
+        <td>${pill(t.status)}</td>
+        <td style="text-align:right">
+          <select class="input" style="padding:4px 8px;font-size:11px" onchange="updateTD(${t.id}, this.value)">
+            ${['pending','confirmed','completed','cancelled','no_show'].map(x => `<option ${x===t.status?'selected':''}>${x}</option>`).join('')}
+          </select>
+        </td>
+      </tr>`).join('');
+}
+
+async function updateTD(id, status) {
+  await api('/api/test-drives/' + id, { method: 'PATCH', body: { status } });
+  loadTestDrives();
+}
+
+/* ── Users ────────────────────────────────────────────────────── */
+async function loadUsers() {
+  const data = await api('/api/admin/users');
+  const tb = h('#users-table tbody');
+  tb.innerHTML = data.data.map(u => `
+    <tr>
+      <td>${u.name}</td>
+      <td>${u.email}</td>
+      <td>${pill(u.role === 'customer' ? 'closed' : u.role === 'admin' ? 'approved' : 'contacted')} <span style="color:var(--dim);font-size:11px">${u.role}</span></td>
+      <td>${u.phone || '—'}</td>
+      <td>${fmtDate(u.created_at)}</td>
+      <td style="text-align:right">${u.id !== ME.id ? `<button class="btn-ghost btn-sm btn-danger" onclick="deleteUser(${u.id})">Delete</button>` : '<small style="color:var(--dim)">you</small>'}</td>
+    </tr>`).join('');
+}
+
+async function deleteUser(id) {
+  if (!confirm('Delete this user?')) return;
+  try { await api('/api/admin/users/' + id, { method: 'DELETE' }); loadUsers(); }
+  catch (err) { alert(err.message); }
+}
+
+function openUserEdit() {
+  showModal('New staff user', `
+    <form id="user-form">
+      <dt>Name</dt><dd><input class="input" name="name" required></dd>
+      <dt>Email</dt><dd><input class="input" type="email" name="email" required></dd>
+      <dt>Phone</dt><dd><input class="input" name="phone"></dd>
+      <dt>Role</dt><dd><select class="input" name="role">
+        <option value="sales_rep" selected>Sales rep</option>
+        <option value="admin">Admin</option>
+      </select></dd>
+      <dt>Password (min 8)</dt><dd><input class="input" type="password" name="password" required minlength="8"></dd>
+    </form>`,
+    [
+      { label: 'Create', cls: 'btn', onClick: async () => {
+          const fd = new FormData(h('#user-form'));
+          try {
+            await api('/api/admin/users', { method: 'POST', body: Object.fromEntries(fd) });
+            closeModal(); loadUsers();
+          } catch (err) { alert(err.message); }
+      } },
+      { label: 'Cancel', cls: 'btn-ghost', onClick: closeModal },
+    ]);
+}
+
+/* ── Modal ────────────────────────────────────────────────────── */
+function showModal(title, bodyHtml, actions) {
+  h('#detail-title').textContent = title;
+  h('#detail-body').innerHTML = bodyHtml;
+  h('#detail-foot').innerHTML = '';
+  (actions || []).forEach(a => {
+    const b = document.createElement('button');
+    b.className = a.cls || 'btn-ghost';
+    b.textContent = a.label;
+    b.onclick = a.onClick;
+    h('#detail-foot').appendChild(b);
+  });
+  h('#detail-modal').classList.add('open');
+}
+function closeModal() { h('#detail-modal').classList.remove('open'); }
+
+/* ── Boot ─────────────────────────────────────────────────────── */
+if (TOKEN && ME) {
+  api('/api/auth/me').then(() => enterApp())
+    .catch(() => { TOKEN=''; ME=null; localStorage.clear(); });
+}
+</script>
+
+</body>
+</html>
