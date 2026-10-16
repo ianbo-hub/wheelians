@@ -1,7 +1,17 @@
 export default function Hero() {
   return (
     <section className="hero" id="hero">
-      <div className="hero-bg" />
+      <video
+        className="hero-video"
+        autoPlay
+        muted
+        loop
+        playsInline
+        preload="auto"
+        poster=""
+      >
+        <source src="/assets/hero.mp4" type="video/mp4" />
+      </video>
       <div className="hero-scrim" />
       <div className="hero-content">
         <h1>WHEEL<span>IANS</span></h1>
