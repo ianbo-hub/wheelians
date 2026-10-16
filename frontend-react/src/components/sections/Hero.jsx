@@ -1,7 +1,7 @@
 export default function Hero() {
   return (
     <section className="hero" id="hero">
-      <video autoPlay muted loop playsInline src="/assets/hero.mp4" />
+      <div className="hero-bg" />
       <div className="hero-scrim" />
       <div className="hero-content">
         <h1>WHEEL<span>IANS</span></h1>
